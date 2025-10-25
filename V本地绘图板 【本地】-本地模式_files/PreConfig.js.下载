@@ -1,0 +1,22 @@
+/**
+ * Copyright (c) 2006-2020, JGraph Ltd
+ * Copyright (c) 2006-2020, draw.io AG
+ */
+// Overrides of global vars need to be pre-loaded
+window.EXPORT_URL = 'http://test-doc.caogao.online:8443/trans/draw2pdf';
+
+window.PLANT_URL = 'http://test-doc.caogao.online:8443/trans/plantuml';
+//window.PLANT_URL = 'http://127.0.0.1:10018';
+
+if(urlParams['dev'] != '1')
+ {
+    window.EXPORT_URL = "https://doc."+urlParams['v_origin']+"/trans/draw2pdf";
+    window.PLANT_URL = "https://doc."+urlParams['v_origin']+"/trans/plantuml";
+}
+    
+window.DRAWIO_BASE_URL = null; // Replace with path to base of deployment, e.g. https://www.example.com/folder
+window.DRAWIO_VIEWER_URL = 'https://visionon.cn/dv17.3.0/js/viewer-static.min.js'; // Replace your path to the viewer js, e.g. https://www.example.com/js/viewer.min.js
+window.DRAWIO_LIGHTBOX_URL = null; // Replace with your lightbox URL, eg. https://www.example.com
+window.DRAW_MATH_URL = 'math';
+window.DRAWIO_CONFIG = null; // Replace with your custom draw.io configurations. For more details, https://www.diagrams.net/doc/faq/configure-diagram-editor
+urlParams['sync'] = 'manual';

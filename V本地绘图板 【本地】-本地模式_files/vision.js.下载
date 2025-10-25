@@ -1,0 +1,405 @@
+//Vision Plugin for code style 
+Draw.loadPlugin(function(ui) {
+
+	var graph = ui.editor.graph;
+	mxscript("plugins/vision/highlight.min.js", function(){
+		//hljs.initHighlightingOnLoad();
+		/*
+		hljs.configure({
+			languageDetectRe: /language-([\w-]+)/i, // for `grammar-swift` style CSS naming
+		  });
+		*/
+		const brPlugin = {
+			"before:highlightBlock": ({ block }) => {
+			  block.innerHTML = block.innerHTML.replace(/\n/g, '').replace(/<br[ /]*>/g, '\n');
+			},
+			"after:highlightBlock": ({ result }) => {
+			  result.value = result.value.replace(/\n/g, "<br>");
+			}
+		  };
+		
+		// how to use it
+		hljs.addPlugin(brPlugin);
+		//hljs.highlightAll();
+	}, null, null, true);
+
+
+	var mxTextRedraw = mxText.prototype.redraw;
+	mxText.prototype.redraw = function()
+	{
+		mxTextRedraw.apply(this, arguments);
+		
+		// Handles label rendered without foreign object
+		if (this.node != null && this.node.nodeName == 'g')
+		{
+			//graph.processFontAttributes(this.node);
+			var els = this.node.querySelectorAll("pre code");
+			// then highlight each
+			for( var i = 0; i < els.length; i ++)
+			{
+				var el = els[i];
+				if(el && el.parentNode ){
+					//console.log( el );
+					if( (typeof( hljs) != 'undefined') && (hljs != null) ){
+						el.parentElement.className = 'hljs '+ el.className;  //设置pre的class，用于hijs正常工作. 必须 'hljs language-java'
+						hljs.highlightElement(el.parentNode );
+						
+					}
+						
+						//hljs.highlightElement(el );
+				}
+			}
+		}
+
+		/*
+		//获取看是否是视频对象,终于已经可以正常显示了. 现在开始可以贴视频了. 
+		var vediourl = this.state.cell.getAttribute('visionvediourl');
+		if( vediourl != null ){
+			
+			vediourl = graph.decompress( vediourl );
+
+			var el = this.node.querySelector("image");
+			
+			if( el ){
+				var container = el.parentNode;
+				var iframe = document.createElement('iframe');
+				iframe.style.position = 'relative';
+				iframe.style.top = '0px';
+				iframe.style.left = '0px';
+				iframe.setAttribute('frameborder', '0');
+				iframe.setAttribute('src', vediourl );	
+				
+				while (container.firstChild) {
+					container.removeChild(container.firstChild)
+				}
+				container.appendChild( iframe );
+			}
+		}*/
+	};
+
+
+	//判断是否在视口中，目前的判断方式是，只有全部显示在当前视口中的，才能返回1，如果只是部分在
+	//不会返回1.
+	//FIXME: 可能问题是，如果一个图片很大，各个方面都超出了视口，反而不会加载图片了，除非缩放到适合当前视口. 
+	//这个在手机端可能是有问题的. 
+	var isInViewPort = function( element ) {
+		const viewWidth = window.innerWidth || document.documentElement.clientWidth;
+		const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+		const {
+		  top,
+		  right,
+		  bottom,
+		  left,
+		} = element.getBoundingClientRect();
+
+		//对象完全在视口内
+		if (
+			top >= 0 &&
+			left >= 0 &&
+			right <= viewWidth &&
+			bottom <= viewHeight
+		  ) return true;
+
+		//对象覆盖视口
+		if (
+			top <= 0 &&
+			left <= 0 &&
+			right >= viewWidth &&
+			bottom >= viewHeight
+		  ) return true;
+	   
+
+		//纵向跨越
+		if (
+			top <= 0 && bottom >= viewHeight &&
+			left >= 0 && right <= viewWidth
+		  ) return true;
+
+		//横向跨越
+		if (
+			top >= 0 && bottom <= viewHeight &&
+			left <= 0 && right >= viewWidth
+		  ) return true;		
+		
+		//获取一张照片的可见区域
+		var vleft = left < 0? 0: left < viewWidth ? left: viewWidth;
+		var vright = right < 0? 0: right < viewWidth ? right: viewWidth;
+
+		var vtop = top < 0? 0: top < viewHeight ? top: viewHeight;
+		var vbottom = bottom < 0 ? 0: bottom < viewHeight ? bottom: viewHeight;
+
+		var interarea = (vright - vleft) * (vbottom - vtop );
+
+		//如果一张照片可见区域超过50%
+		if( ( (vright - vleft ) * (vbottom - vtop )  )
+			/ 
+			( (right - left ) * (bottom - top ) )
+			> 0.5 
+			) return true;
+		//如果可见区域的50%被一张照片覆盖
+		if( ( (vright - vleft ) * (vbottom - vtop )  )
+			/ 
+			( viewWidth * viewHeight )
+			> 0.5 
+			) return true;
+
+		return false;
+	};
+
+
+	//对于图片前面是缩略图情况，加载整图 
+	var  loadFullImg = function(  stateobj ) {
+
+		
+
+		if( stateobj.showThumb == 'thumb' ){
+			//如果在当前视图，且分辨率大于当前图片适应的分辨率,则显示原图片
+
+			//做一个简单的判断，获取当前图片的geo信息，乘以scale, 得出w,h的分辨率，如果
+			var geo = stateobj.state.cell.getGeometry();
+			var scale = graph.view.getScale();
+			//如果整体分辨率在512之下，不进行任何动作
+			if( geo.width * scale < 512 && geo.height * scale < 512 ) return;
+
+			var img = new Image();
+			// console.log('loading full image');
+			stateobj.showThumb = 'loading';
+			img.src = stateobj.style.image;
+			img.onload = function(){
+				//return;
+				if(img.complete){
+					if (stateobj.node.childNodes[0].setAttributeNS == null)
+					{
+						stateobj.node.childNodes[0].setAttribute('xlink:href',  img.src );
+					}
+					else
+					{
+						stateobj.node.childNodes[0].setAttributeNS(mxConstants.NS_XLINK, 'xlink:href', img.src );
+					}
+				}
+				stateobj.showThumb = 'full';
+
+				//remove listener
+				mxEvent.removeListener( graph.container, 'scroll', stateobj.vscrolllistener );
+			}
+		}
+	};
+
+
+	var mxImageShapeRedraw = mxImageShape.prototype.redraw;
+	mxImageShape.prototype.redraw = function( )
+	{	
+
+		/*
+		//如果存在.. thumb ，则先加载		
+			if (node.setAttributeNS == null)
+			{
+				node.setAttribute('xlink:href', src);
+			}
+			else
+			{
+				node.setAttributeNS(mxConstants.NS_XLINK, 'xlink:href', src);
+			}
+		*/
+		mxImageShapeRedraw.apply(this, arguments );
+		
+		//处理有缩略图的情况。（什么时候加载大图片？) 
+		if( this.style && this.style.image  &&  ! this.style.image.startsWith('data:image/svg+xml;')){
+			//获取一个vthumb，表明需要处理缩略图问题
+			if( this.style.visionthumb != null && this.showThumb != 'full' ){
+				//FIXME visionthumb 取值为 floor( imagewith / 512 ). 
+				//所以有效值为 1，2，3，4，5 等，原本设计希望进行逐层分辨率加载. 
+				//目前先简单实现，就是512的缩略图和全图加载. 
+
+				//该图有缩略图 
+				let that = this;
+				//load缩略图,如果已经load大图了(showThumb)，则跳过
+				var thumbimgurl = this.style.image + '?l=512';
+				if(  this.showThumb != 'full' ){
+					if (this.node.childNodes[0].setAttributeNS == null)
+					{
+						this.node.childNodes[0].setAttribute('xlink:href',  thumbimgurl );
+					}
+					else
+					{
+						this.node.childNodes[0].setAttributeNS(mxConstants.NS_XLINK, 'xlink:href',  thumbimgurl );
+					}
+
+					this.showThumb = 'thumb';
+					//判断是否在当前viewport,如果是，则开始load大图
+					var isinview = isInViewPort( this.node.childNodes[0] );
+					if( isinview ){
+						loadFullImg( this );
+					}else{
+						//否则，增加一个scrolllistener，当对象出现在viewport的时候，最好驻留半秒，开始load大图
+						if( this.vscrolllistener == null )
+						{
+							//监听scroll对象，
+							this.vscrolllistener = mxUtils.bind(this, function()
+							{
+								if ( this.node && (this.node.childNodes != null) && isInViewPort( this.node.childNodes[0] ) )
+									loadFullImg( this );
+							});
+
+							//mxEvent.addListener(window, 'scroll', this.scrollHandler);
+							mxEvent.addListener( graph.container, 'scroll', this.vscrolllistener );
+						}
+					}
+				}
+			}
+			//console.log(this.style.image);
+		}
+		
+		
+	}
+
+
+	var mxShapeRedraw = mxShape.prototype.redraw;
+	mxShape.prototype.redraw = function()
+	{
+		mxShapeRedraw.apply(this, arguments);
+		
+		if( this.state == null ) return;
+
+		//获取看是否是视频对象,终于已经可以正常显示了. 现在开始可以贴视频了. 
+		var vediourl = this.state.cell.getAttribute('visionvediourl');
+		var visionid = this.state.cell.getAttribute('visionid');
+		if( vediourl != null ){
+			
+			vediourl = graph.decompress( vediourl );
+
+			var el = this.node.querySelector('#v-img-'+visionid );
+
+			//第一次render的时候，只是在图片上增加一个播放的按钮. 
+			//并且为这个按钮增加一个onclick的回调函数，可以进行播放. (能否记录放的时间呢？)
+			if( el ){
+
+				if(  this.node.querySelector("button") == null ){
+					var container = el.parentNode;
+					var playbutton = document.createElement('button');
+					playbutton.style.position = 'relative';
+					playbutton.style.left = '20px';
+					playbutton.style.bottom = '5px';
+					playbutton.innerHTML = " > ";
+					playbutton.style.border = 'none';
+					//playbutton.style.display = 'none';
+					container.append( playbutton );
+
+					/*
+					mxEvent.addListener(el, 'click', function(){
+						playbutton.style.display = '';
+					}); */
+
+					mxEvent.addListener(playbutton, 'click', function(){
+						
+						// 这里再次判断视频网站的合理性
+						vediourl = V_ParseVedioSrc( vediourl );
+						if( vediourl == null )   //如果不合规，不做任何处理 
+							return; 
+
+						var iframe = document.createElement('iframe');
+						iframe.style.position = 'relative';
+						iframe.style.top = '0px';
+						iframe.style.left = '0px';
+						iframe.setAttribute('frameborder', '0');
+						iframe.setAttribute('src', vediourl );
+						iframe.id = 'v-iframe-'+visionid;
+
+						var theel = container.querySelector('#v-img-'+visionid);
+
+						iframe.width = theel.width;
+						iframe.height = theel.height;					
+						container.replaceChild(iframe,theel );
+
+						
+						window.setTimeout( function () {
+							playbutton.style.display = 'none';
+							//mxEvent.removeListener( playbutton, 'click' );
+							//container.remove( playbutton );
+						}, 2000 );
+						
+					});
+				}
+
+
+				 //playbutton.setAttribute('frameborder', '0');
+			}
+
+			
+			//var container = el.parentNode;
+
+			el = this.node.parentNode.querySelector('#v-img-'+visionid);
+			if( el ){
+				el.width = this.state.cell.geometry.width;
+				el.height = this.state.cell.geometry.height-10;
+			}
+
+			el = this.node.parentNode.querySelector('#v-iframe-'+visionid);
+			if( el ){
+				el.width = this.state.cell.geometry.width;
+				el.height = this.state.cell.geometry.height-10;
+			}
+			//是否需要进行尺寸的变化设计
+
+
+		}
+	};	
+
+
+
+/* 
+	var graphViewValidateCellState = graph.view.validateCellState;
+	
+	graph.view.validateCellState = function(cell, recurse)
+	{
+		var state = graphViewValidateCellState.apply(this, arguments);
+		recurse = (recurse != null) ? recurse : true;
+		
+		if (recurse && state != null && graph.model.isVertex(state.cell) &&
+			mxUtils.getValue(state.style, 'numbered', 1) == 1)
+		{
+			this.numberCounter++;
+			this.redrawNumberShape(state);
+		}
+		
+		return state;
+	};
+
+*/
+	/*
+	var graphViewValidateCellState = graph.view.validateCellState;
+
+	graph.view.validateCellState = function(cell, recurse)
+	{
+		var state = graphViewValidateCellState.apply(this, arguments);
+		
+		recurse = (recurse != null) ? recurse : true;
+		return state;
+	};
+
+	function refresh()
+	{
+		var cells = graph.model.cells;
+		
+		for (var id in cells)
+		{
+			coderender(cells[id]);
+		}
+	};
+	
+	function refresh(){
+		return;
+	}
+
+	graph.addListener(mxEvent.SIZE, refresh);
+	refresh();		
+	*/ 
+
+
+
+});
+
+
+
+
+

@@ -1,0 +1,142 @@
+
+var v_customer_settings = {
+    'default':{                                                         //通用配置
+        'clipboard-template':['templates/default.clipboard.xml'],                   
+        'libs':'general;basic;infographic;flat-color-icons;',           //通用用户的libs配置
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+            /*
+            {'name':'视觉笔记','template':'templates/default.sketchnotes.xml','icon':'','libs':'clipart'},
+            {'name':'商业画布','template':'templates/default.businessmodel.xml','icon':''},
+            {'name':'平面布局','template':'templates/default.officelayout.xml','icon':''},
+            {'name':'平面设计','template':'templates/default.design.xml','icon':'','libs':''},
+            {'name':'VisionBoard','template':'templates/default.visionboard.xml','icon':'','libs':''},
+            {'name':'Memories','template':'templates/default.photowall.xml','icon':'','libs':''},
+            {'name':'ClueWall','template':'templates/default.infowall.xml','icon':'','libs':''},
+            {'name':'视觉笔记','template':'default.sketchnotes.xml','icon':'','libs':''},
+            {'name':'商业画布','template':'default.businessmodel.xml','icon':''},
+            {'name':'MindMap','template':'default.mindmap.xml','icon':'','libs':''},
+            {'name':'平面布局','template':'default.officelayout.xml','icon':''},
+            {'name':'Memories','template':'default.photowall.xml','icon':'','libs':''},
+            {'name':'Family','template':'default.family.xml','icon':''},
+            {'name':'ClueWall','template':'default.infowall.xml','icon':'','libs':''},
+            {'name':'VisionBoard','template':'default.visionboard.xml','icon':'','libs':''},
+            {'name':'平面设计','template':'default.design.xml','icon':'','libs':''},
+            */
+            
+        ]
+    },
+    'flowchart':{                                                              //流程图图设计
+        'clipboard-template':['templates/default.clipboard.xml'],                   
+        'libs':'general;flowchart;basic;flat-color-icons;',                               
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },
+    'visio':{                                                              //visio 用户
+        'clipboard-template':['templates/default.clipboard.xml'],                   
+        'libs':'general;flowchart;mscae;cisco;basic;flat-color-icons;',                               
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },    
+    'org':{                                                              //针对产品设计
+        'clipboard-template':['templates/default.clipboard.xml'],                   
+        'libs':'general;basic;flat-color-icons;',                               
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },     
+    'product':{                                                              //针对产品设计
+        'clipboard-template':['templates/default.clipboard.xml'],                   
+        'libs':'general;basic;bootstrap;flat-color-icons;',           
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },    
+    'softsys':{                                                          
+        'clipboard-template':['templates/default.clipboard.xml'], 
+        'libs':'general;basic;infographic;uml;er;flat-color-icons;',                                                  
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },
+    'paper':{
+        'clipboard-template':['templates/family.draft.xml'],             
+        'libs':'general;basic;flowchart;infographic;',      
+        'doctemplates':[
+            {'name':'空白图册','template':'templates/default.normal.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'草稿本','template':'templates/default.draft.xml','icon':'','libs':'general;'},
+            {'name':'思维导图','template':'templates/default.mindmap.xml','icon':'','libs':'general;flat-color-icons;'},
+            {'name':'纪要','template':'templates/default.notes.xml','icon':'','libs':'general;flat-color-icons;'},
+        ]
+    },  
+}
+
+
+
+v_userconfig = function(   ){
+
+    var vuc = {l:'',c:'',r:''};
+    var vucstr = localStorage.getItem('V_UC');
+
+    if( vucstr != null ) vuc = JSON.parse( vucstr ); 
+
+    var channel  = vuc.c;
+    var refer = vuc.r;  
+    if(channel == null  )
+        channel = 'default';
+    if(refer == null )
+        refer = "default";
+
+    if( v_customer_settings[ refer ] == null )
+        return v_customer_settings['default'];
+    
+    return v_customer_settings[ refer ];
+}
+
+//     <h4>6.11 视频支持</h4><p>1. 支持视频信息展示. Demo：\
+// <a target="_blank" href="https://caogao.online/p/NrdjayQRRliByf0NSEgn4Q/RgqzXwWM/v_latest">视频展示示例</a></p>\
+
+var v_updateinfomsg = '\
+    点击 <a href="https://pub-inc.visionon.cn/help/refer-code/" target="_blank"> 推荐用户获取权益</a>. </p>\
+    <h4>02.26 - 离线优化及曲线支持</h4>\
+        <p><span style="color:red">小文档在最新版本firefox(>135.0)存在兼容问题，如需使用小文档请安装firefox 135.0以前版本</span></p>\
+        <p>1. 离线使用功能增强，目录可离线打开</p>\
+        <p>2. 灵动曲线设计支持，参考: <a href="https://visionon.cn/p/MrjRQf9HRG-CTZTmH65K-A/QT6yHdC7/v_latest" target="_blank">示例</a></p>\
+    <h4>12.26 - 部分交互优化</h4><p>1. V本地绘图板使用优化</p><p>2. 部分交互体验优化实现</p>\
+    <h4>10.26 - 部分缺陷修正</h4><p>1. 分享版本号去除临时备份版本</p><p>2. 增加空格键+鼠标进行画布移动便捷方式</p><p>3. 其他部分缺陷修正</p>\
+    <h4>05.26 - 权益及部分缺陷修正</h4><p>1. 用户登出时提示未保存文档情况</p><p>2. 用户免费权益及邀请获取权益进行部分调整</p><p>3. 修正部分BUG</p> \
+    <h4>02.26 - 推荐码支持</h4><p>1. 支持通过推荐码获取免费文档权益 </p><p>2. 权益到期的降级流程完善</p><p>3. 修正图片尺寸缺陷，支持大图片</p> \
+    <h4>02.26 - 推荐码支持</h4><p>1. 支持通过推荐码获取免费文档权益 </p><p>2. 权益到期的降级流程完善</p><p>3. 修正图片尺寸缺陷，支持大图片</p> \
+    <h4>更多... </h4> <p>1. 22.02.26  VisionOn 上线开通</p> <p>2. 参考历史更新： <a href="https://pub.visionon.cn/help/latest-update/" target="_blank">历史更新</a> </p> \
+    ';
+
+var v_clientconfig = {
+    origin:'visionon.cn',
+    drawiominversion:'250226',
+    templateversion:'230126',
+    clientversion:{
+        version:26,
+        title:'版本[02.26] 离线增强&曲线绘制',
+        message:v_updateinfomsg,
+    }
+};
